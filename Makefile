@@ -1,3 +1,15 @@
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    Makefile                                           :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: odrinkwa <odrinkwa@student.42.fr>          +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2019/06/17 12:13:46 by odrinkwa          #+#    #+#              #
+#    Updated: 2019/11/30 17:31:37 by odrinkwa         ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
+
 PROJ_NAME	?= LIBFT
 TARGET_EXEC	?= libft.a
 
@@ -46,13 +58,13 @@ all: info $(TARGET_EXEC)
 
 clean_only_exe:
 	@if [ -f "$(TARGET_EXEC)" ]; then \
-		printf "\033[0;32m%-10s\033[0;34m%-9s\033[0;33m  %s\033[0m\n" "[$(PROJ_NAME)]" "[$(PREFIX)]" "Clean bin $(PROJ_NAME), because changed MODE COMPILATION."; \
+		printf "$(GREEN_COLOR)%-10s$(BLUE_COLOR)%-9s$(YELLOW_COLOR)  %s$(RESET_COLOR)\n" "[$(PROJ_NAME)]" "[$(PREFIX)]" "Clean bin $(PROJ_NAME), because changed MODE COMPILATION."; \
 		rm -rf $(TARGET_EXEC); \
 	fi
 
 # make libft file
 $(TARGET_EXEC): $(OBJS) $(REBUILD)
-	@printf "\033[0;32m%-10s\033[0;34m%-9s\033[0;33m  %s\033[0m %s\n" "[$(PROJ_NAME)]" "[$(PREFIX)]" "Linking:  " "$@"
+	@printf "$(GREEN_COLOR)%-10s$(BLUE_COLOR)%-9s$(YELLOW_COLOR)  %s$(RESET_COLOR) %s\n" "[$(PROJ_NAME)]" "[$(PREFIX)]" "Linking:  " "$@"
 	@$(AR) $(ARFLAGS) $(TARGET_EXEC) $(OBJS)
 	@ranlib $(TARGET_EXEC)
 	@rm -f $(FILE_LAST_MODE)
@@ -60,7 +72,7 @@ $(TARGET_EXEC): $(OBJS) $(REBUILD)
 
 # c source
 $(BUILD_DIR)/%.c.o: %.c
-	@printf "\033[0;32m%-10s\033[0;34m%-9s\033[0;33m  %s\033[0m %s\n" "[$(PROJ_NAME)]" "[$(PREFIX)]" "Compiling:" "$<"
+	@printf "$(GREEN_COLOR)%-10s$(BLUE_COLOR)%-9s$(YELLOW_COLOR)  %s$(RESET_COLOR) %s\n" "[$(PROJ_NAME)]" "[$(PREFIX)]" "Compiling:" "$<"
 	@$(MKDIR_P) $(dir $@)
 	@$(CC) $(CFLAGS) -c $< -o $@
 
@@ -70,17 +82,19 @@ debug:
 	@make -s -C . mode=debug
 
 clean:
-	@printf "\033[0;32m%-10s\033[0;34m%-9s\033[0;33m  %s\033[0m\n" "[$(PROJ_NAME)]" "[$(PREFIX)]" "Clean objects $(PROJ_NAME)"
+	@printf "$(GREEN_COLOR)%-10s$(BLUE_COLOR)%-9s$(YELLOW_COLOR)  %s$(RESET_COLOR)\n" "[$(PROJ_NAME)]" "[$(PREFIX)]" "Clean objects $(PROJ_NAME)"
 	@$(RM) -rf $(OBJ_DIR)
 
 fclean:
-	@printf "\033[0;32m%-10s\033[0;34m%-9s\033[0;33m  %s\033[0m\n" "[$(PROJ_NAME)]" "[$(PREFIX)]" "Clean objects $(PROJ_NAME)"
+	@printf "$(GREEN_COLOR)%-10s$(BLUE_COLOR)%-9s$(YELLOW_COLOR)  %s$(RESET_COLOR)\n" "[$(PROJ_NAME)]" "[$(PREFIX)]" "Clean objects $(PROJ_NAME)"
 	@$(RM) -rf $(OBJ_DIR)
-	@printf "\033[0;32m%-10s\033[0;34m%-9s\033[0;33m  %s\033[0m\n" "[$(PROJ_NAME)]" "[$(PREFIX)]" "Clean bin $(PROJ_NAME)"
+	@printf "$(GREEN_COLOR)%-10s$(BLUE_COLOR)%-9s$(YELLOW_COLOR)  %s$(RESET_COLOR)\n" "[$(PROJ_NAME)]" "[$(PREFIX)]" "Clean bin $(PROJ_NAME)"
 	@rm -rf $(TARGET_EXEC)
 
 re: fclean all
 
 -include $(DEPS)
+
+include colors.mk
 
 MKDIR_P ?= mkdir -p
