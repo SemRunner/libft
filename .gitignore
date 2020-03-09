@@ -2,3 +2,5 @@
 .DS_Store
 sources/printf_src/Archive.zip
 libft.a
+*.c.d
+objects/last_version.txt

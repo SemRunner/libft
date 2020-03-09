@@ -1,66 +1,86 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    Makefile                                           :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: odrinkwa <odrinkwa@student.42.fr>          +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2019/06/17 12:13:46 by odrinkwa          #+#    #+#              #
-#    Updated: 2019/11/30 17:31:37 by odrinkwa         ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
+PROJ_NAME	?= LIBFT
+TARGET_EXEC	?= libft.a
 
-NAME		= libft.a
-L_FT 		?= .
-FT_NAME		= $(NAME)
-HD_NAME		= libft.h
+OBJ_DIR = ./objects
 
-FT_LNK 		= -L $(L_FT) -l ft
-FT_INC		= -I $(L_FT)/includes
-FT_INC_PRF	= -I $(L_FT)/includes/printf_hdr
-FT_LIB		= $(L_FT)/$(FT_NAME)
+FILE_LAST_MODE = $(OBJ_DIR)/last_version.txt
+cat := $(if $(filter $(OS),Windows_NT),type,cat)
+LAST_MODE = $(shell $(cat) $(FILE_LAST_MODE) 2>/dev/null)
 
-LIB_LNK		= $(FT_LNK)
-LIB_INC		= $(FT_INC)
+ifneq ($(mode),debug)
+   mode = release
+   BUILD_DIR = $(OBJ_DIR)/release
+   PREFIX = RELEASE MODE
+else
+   mode = debug
+   BUILD_DIR = $(OBJ_DIR)/debug
+   PREFIX = DEBUG MODE
+endif
 
-include libft_base.mk
+ifneq ($(mode),$(LAST_MODE))
+    REBUILD = clean_only_exe
+endif
 
-OBJ			= $(addprefix $(LIBFT_OBJ_DIR), $(LIBFT_OBJ))
-OBJ 		+= $(addprefix $(PRF_OBJ_DIR), $(PRINTF_OBJ))
+SRC_DIRS	?= ./sources
 
-CFLAGS 		= -Wall -Wextra -Werror -g3 -O3
+SRCS		:= $(shell find $(SRC_DIRS) -type f -name *.c )
+OBJS		:= $(SRCS:%=$(BUILD_DIR)/%.o)
+DEPS		:= $(OBJS:.o=.d)
 
-CC			= gcc
+BASE_INC_DIR	:= includes
+INC_DIRS	:= $(shell find $(BASE_INC_DIR) -type d)
+INC_FLAGS	:= $(addprefix -I,$(INC_DIRS))
 
-.PHONY: all clean fclean re
+CFLAGS		?= -Wall -Wextra -Werror $(INC_FLAGS) -MMD -MP
+ifeq ($(mode),release)
+   CFLAGS += -O2
+else
+   CFLAGS += -O0 -g3
+endif
 
-all: $(LIBFT_OBJ_DIR) $(NAME)
+ARFLAGS		= rc
+
+.PHONY: all clean fclean re info
+
+all: info $(TARGET_EXEC)
+
+clean_only_exe:
+	@if [ -f "$(TARGET_EXEC)" ]; then \
+		printf "\033[0;32m%-10s\033[0;34m%-9s\033[0;33m  %s\033[0m\n" "[$(PROJ_NAME)]" "[$(PREFIX)]" "Clean bin $(PROJ_NAME), because changed MODE COMPILATION."; \
+		rm -rf $(TARGET_EXEC); \
+	fi
+
+# make libft file
+$(TARGET_EXEC): $(OBJS) $(REBUILD)
+	@printf "\033[0;32m%-10s\033[0;34m%-9s\033[0;33m  %s\033[0m %s\n" "[$(PROJ_NAME)]" "[$(PREFIX)]" "Linking:  " "$@"
+	@$(AR) $(ARFLAGS) $(TARGET_EXEC) $(OBJS)
+	@ranlib $(TARGET_EXEC)
+	@rm -f $(FILE_LAST_MODE)
+	@echo "$(mode)" >> $(FILE_LAST_MODE)
+
+# c source
+$(BUILD_DIR)/%.c.o: %.c
+	@printf "\033[0;32m%-10s\033[0;34m%-9s\033[0;33m  %s\033[0m %s\n" "[$(PROJ_NAME)]" "[$(PREFIX)]" "Compiling:" "$<"
+	@$(MKDIR_P) $(dir $@)
+	@$(CC) $(CFLAGS) -c $< -o $@
+
+info:
+
+debug:
+	@make -s -C . mode=debug
 
 clean:
-	rm -rf $(PRF_OBJ_DIR)
-	rm -rf $(LIBFT_OBJ_DIR)
+	@printf "\033[0;32m%-10s\033[0;34m%-9s\033[0;33m  %s\033[0m\n" "[$(PROJ_NAME)]" "[$(PREFIX)]" "Clean objects $(PROJ_NAME)"
+	@$(RM) -rf $(OBJ_DIR)
 
-fclean: clean
-	rm -f $(NAME)
+fclean:
+	@printf "\033[0;32m%-10s\033[0;34m%-9s\033[0;33m  %s\033[0m\n" "[$(PROJ_NAME)]" "[$(PREFIX)]" "Clean objects $(PROJ_NAME)"
+	@$(RM) -rf $(OBJ_DIR)
+	@printf "\033[0;32m%-10s\033[0;34m%-9s\033[0;33m  %s\033[0m\n" "[$(PROJ_NAME)]" "[$(PREFIX)]" "Clean bin $(PROJ_NAME)"
+	@rm -rf $(TARGET_EXEC)
 
-re:
-	$(MAKE) fclean
-	$(MAKE) all
+re: fclean all
 
-$(LIBFT_OBJ_DIR):
-	mkdir -p $(LIBFT_OBJ_DIR)
-	mkdir -p $(PRF_OBJ_DIR)
+-include $(DEPS)
 
-$(LIBFT_OBJ_DIR)%.o: $(LIBFT_SRC_DIR)%.c $(FULL_LIBFT_HDR)
-	$(CC) $(CFLAGS) $(FT_INC) $(FT_INC_PRF) -o $@ -c $<
-
-$(PRF_OBJ_DIR)%.o: $(PRF_SRC_DIR)%.c $(FULL_PRINTF_HDR)
-	$(CC) $(CFLAGS) $(FT_INC) $(FT_INC_PRF) -o $@ -c $<
-
-$(NAME): $(OBJ)
-	ar rc $(NAME) $(OBJ)
-	ranlib $(NAME)
-
-nodebug: CFLAGS := -Wall -Wextra -Werror -O3
-
-nodebug: all
+MKDIR_P ?= mkdir -p
