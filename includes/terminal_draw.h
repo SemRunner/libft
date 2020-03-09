@@ -47,4 +47,11 @@
 # define B_CYAN		46
 # define B_WHITE	47
 
+void		td_setcolor(int color);
+void		td_reset_color(void);
+void		td_home(void);
+void		td_goto(int x, int y);
+void		td_gotoinline(int line);
+void		td_set_disp_attrib(int color);
+
 #endif
